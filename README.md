@@ -134,12 +134,8 @@ Allow location when the browser prompts — or search any city manually.
 
 ---
 
-## Deployment (Vercel)
-
-1. Push to a public GitHub repository
-2. Import at [vercel.com/new](https://vercel.com/new)
-3. Add environment variable: `WEATHER_API_KEY` = your `wai_` key
-4. Click **Deploy**
+## Live demo
+https://playful-cheesecake-69a2e0.netlify.app/
 
 ---
 
