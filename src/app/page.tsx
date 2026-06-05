@@ -7,7 +7,7 @@ import AISummary from "@/components/weather/AISummary";
 import HourlyChart from "@/components/weather/HourlyChart";
 import DailyForecast from "@/components/weather/DailyForecast";
 import UsageBadge from "@/components/UsageBadge";
-import type { WeatherResponse, HourlyResponse, GeoResult } from "@/types";
+import type { WeatherResponse, GeoResult } from "@/types";
 
 function Skeleton({ className }: { className?: string }) {
   return <div className={`skeleton ${className ?? ""}`} />;
@@ -35,7 +35,6 @@ async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
 
 export default function DashboardPage() {
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
-  const [hourly, setHourly] = useState<HourlyResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const abortRef = useRef<AbortController | null>(null);
@@ -44,12 +43,10 @@ export default function DashboardPage() {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    const { signal } = controller;
 
     setLoading(true);
     setError("");
     setWeather(null);
-    setHourly(null);
 
     try {
       const url =
@@ -57,16 +54,8 @@ export default function DashboardPage() {
           ? `/api/weather?lat=${lat}&lon=${lon}`
           : "/api/weather";
 
-      const weatherData = await fetchJson<WeatherResponse>(url, signal);
-      const { lat: wlat, lon: wlon } = weatherData.location;
-
-      const hourlyData = await fetchJson<HourlyResponse>(
-        `/api/hourly?lat=${wlat}&lon=${wlon}`,
-        signal
-      ).catch(() => null);
-
-      setWeather(weatherData);
-      setHourly(hourlyData);
+      const data = await fetchJson<WeatherResponse>(url, controller.signal);
+      setWeather(data);
     } catch (err) {
       if ((err as { name?: string }).name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Failed to load weather");
@@ -76,7 +65,16 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    if (!navigator.geolocation) {
+      load();
+      return () => abortRef.current?.abort();
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => load(pos.coords.latitude, pos.coords.longitude),
+      () => load()
+    );
+
     return () => abortRef.current?.abort();
   }, [load]);
 
@@ -84,7 +82,8 @@ export default function DashboardPage() {
     load(parseFloat(geo.lat), parseFloat(geo.lon));
   }
 
-  const todayHours = hourly?.forecast?.days?.[0]?.hour ?? null;
+  const today = new Date().toISOString().split("T")[0];
+  const todayHours = weather?.hourly?.filter((h) => h.time.startsWith(today)) ?? [];
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -109,12 +108,10 @@ export default function DashboardPage() {
 
           {weather.ai_summary && <AISummary summary={weather.ai_summary} />}
 
-          {todayHours && todayHours.length > 0 && (
-            <HourlyChart hours={todayHours} />
-          )}
+          {todayHours.length > 0 && <HourlyChart hours={todayHours} />}
 
-          {weather.forecast?.days && weather.forecast.days.length > 0 && (
-            <DailyForecast days={weather.forecast.days} />
+          {weather.daily && weather.daily.length > 0 && (
+            <DailyForecast days={weather.daily} />
           )}
         </div>
       )}

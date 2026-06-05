@@ -1,66 +1,62 @@
-export interface WeatherCondition {
-  text: string;
-  icon?: string;
-  code?: number;
-}
-
 export interface CurrentWeather {
-  temp_c: number;
-  feelslike_c: number;
-  humidity: number;
-  wind_kph: number;
-  wind_dir?: string;
-  uv: number;
-  pressure_mb?: number;
-  vis_km?: number;
-  precip_mm?: number;
-  condition: WeatherCondition;
+  time?: string;
+  temperature?: number;
+  wind_speed?: number;
+  wind_direction?: number;
+  condition_code?: string;
+  icon?: string;
+  icon_path?: string;
+  // enriched from matching hourly entry in route handler
+  humidity?: number;
+  feels_like?: number;
+  uv_index?: number;
 }
 
 export interface DayForecast {
   date: string;
-  max_temp_c: number;
-  min_temp_c: number;
-  condition: WeatherCondition;
-  daily_chance_of_rain?: number;
-  totalprecip_mm?: number;
+  temp_max?: number;
+  temp_min?: number;
+  condition_code?: string;
+  icon?: string;
+  icon_path?: string;
+  precipitation_probability?: number;
+  precipitation_sum?: number;
+  wind_max?: number;
+  sunrise?: string;
+  sunset?: string;
 }
 
 export interface HourForecast {
   time: string;
-  temp_c: number;
-  condition: WeatherCondition;
-  chance_of_rain?: number;
+  temperature?: number;
+  precipitation_probability?: number;
+  wind_speed?: number;
+  condition_code?: string;
+  icon?: string;
+  humidity?: number;
+  feels_like?: number;
+  wind_gust?: number;
+  uv_index?: number;
+  icon_path?: string;
 }
 
 export interface WeatherLocation {
-  name?: string;
-  city?: string;
-  country?: string;
-  region?: string;
   lat: number;
   lon: number;
   timezone?: string;
-  localtime?: string;
+  country?: string;
+  city?: string;
+  requested_lat?: number;
+  requested_lon?: number;
 }
 
 export interface WeatherResponse {
   location: WeatherLocation;
   current: CurrentWeather;
-  forecast?: { days: DayForecast[] };
-  ai_summary?: string;
-}
-
-export interface HourlyResponse {
-  location: WeatherLocation;
-  forecast: {
-    days: Array<{ date: string; hour: HourForecast[] }>;
-  };
-}
-
-export interface DailyResponse {
-  location: WeatherLocation;
-  forecast: { days: DayForecast[] };
+  hourly?: HourForecast[];
+  daily?: DayForecast[];
+  ai_summary?: string | null;
+  client_geo?: { country: string; ip_hash: string };
 }
 
 export interface UsageStats {

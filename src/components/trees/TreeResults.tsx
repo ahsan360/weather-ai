@@ -48,7 +48,9 @@ export default function TreeResults({ result }: Props) {
     { label: "Total Trees", value: String(totalTrees) },
     { label: "Canopy Coverage", value: `${result.canopy_coverage_pct}%` },
     { label: "Confidence", value: `${confidence}%` },
-    { label: "Density / Acre", value: result.tree_density_per_acre.toFixed(1) },
+    ...(result.tree_density_per_acre != null
+      ? [{ label: "Density / Acre", value: result.tree_density_per_acre.toFixed(1) }]
+      : []),
     ...(result.tree_species_guess
       ? [{ label: "Species Guess", value: result.tree_species_guess }]
       : []),

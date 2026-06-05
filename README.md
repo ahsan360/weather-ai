@@ -60,11 +60,6 @@ Real-time weather intelligence with AI-powered summaries and satellite tree anal
 
 5. Open [http://localhost:3000](http://localhost:3000)
 
-## Deploy to Vercel
 
-1. Push to a public GitHub repository
-2. Import at [vercel.com/new](https://vercel.com/new)
-3. Add `WEATHER_API_KEY` in Settings → Environment Variables
-4. Click **Deploy**
 
 > **Security note:** The API key lives only in Next.js Route Handlers — it is never shipped to the browser.
