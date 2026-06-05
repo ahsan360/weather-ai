@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { weatherApi } from "@/lib/weather-api";
+import { apiError } from "@/lib/api-error";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +14,6 @@ export async function POST(req: NextRequest) {
     const data = await weatherApi.analyzeTrees(formData);
     return NextResponse.json(data);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Tree analysis failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiError(err, "Tree analysis failed");
   }
 }

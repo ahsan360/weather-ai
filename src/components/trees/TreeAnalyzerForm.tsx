@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type ChangeEvent, type FormEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { Upload, ImageIcon, Loader2, X } from "lucide-react";
 import type { TreeAnalysisResult } from "@/types";
 
@@ -15,11 +15,19 @@ export default function TreeAnalyzerForm({ onResult }: Props) {
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Revoke object URL on unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
   function handleFile(f: File) {
     if (f.size > 20 * 1024 * 1024) {
       setError("Image must be under 20 MB");
       return;
     }
+    if (preview) URL.revokeObjectURL(preview);
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setError("");
@@ -38,7 +46,6 @@ export default function TreeAnalyzerForm({ onResult }: Props) {
 
   function clearFile() {
     setFile(null);
-    if (preview) URL.revokeObjectURL(preview);
     setPreview(null);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -56,8 +63,10 @@ export default function TreeAnalyzerForm({ onResult }: Props) {
 
     const optional = ["farmerId", "county", "landAcres", "location", "notes"];
     optional.forEach((key) => {
-      const el = form.elements.namedItem(key) as HTMLInputElement | null;
-      if (el?.value.trim()) formData.append(key, el.value.trim());
+      const el = form.elements.namedItem(key);
+      if (el instanceof HTMLInputElement && el.value.trim()) {
+        formData.append(key, el.value.trim());
+      }
     });
 
     try {
@@ -105,6 +114,7 @@ export default function TreeAnalyzerForm({ onResult }: Props) {
             />
             <button
               type="button"
+              aria-label="Clear image"
               onClick={(e) => { e.stopPropagation(); clearFile(); }}
               className="absolute right-3 top-3 rounded-full bg-slate-800 p-1 text-slate-400 hover:text-white"
             >
