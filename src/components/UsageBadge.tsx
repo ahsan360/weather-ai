@@ -9,8 +9,8 @@ function isUsageStats(d: unknown): d is UsageStats {
   const o = d as Record<string, unknown>;
   return (
     typeof o.plan === "string" &&
-    typeof o.requests_used === "number" &&
-    typeof o.requests_limit === "number"
+    typeof o.period === "object" && o.period !== null &&
+    typeof o.limits === "object" && o.limits !== null
   );
 }
 
@@ -26,10 +26,9 @@ export default function UsageBadge() {
 
   if (!usage) return null;
 
-  const pct = Math.min(
-    100,
-    Math.round((usage.requests_used / usage.requests_limit) * 100)
-  );
+  const used = usage.period.requestCount;
+  const limit = usage.limits.requests;
+  const pct = Math.min(100, Math.round((used / limit) * 100));
 
   return (
     <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400">
@@ -42,8 +41,7 @@ export default function UsageBadge() {
         />
       </div>
       <span>
-        {usage.requests_used.toLocaleString()} /{" "}
-        {usage.requests_limit.toLocaleString()}
+        {used.toLocaleString()} / {limit.toLocaleString()}
       </span>
     </div>
   );

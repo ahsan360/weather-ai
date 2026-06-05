@@ -61,12 +61,20 @@ export interface WeatherResponse {
 
 export interface UsageStats {
   plan: string;
-  requests_used: number;
-  requests_limit: number;
-  ai_requests_used: number;
-  ai_requests_limit: number;
-  period_start: string;
-  period_end: string;
+  period: {
+    start: string;
+    end: string;
+    requestCount: number;
+    aiRequestCount: number;
+  };
+  limits: {
+    requests: number;
+    aiRequests: number;
+  };
+  remaining: {
+    requests: number;
+    aiRequests: number;
+  };
 }
 
 
