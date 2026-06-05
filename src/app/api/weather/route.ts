@@ -45,10 +45,20 @@ export async function GET(req: NextRequest) {
     if (lat && lon) {
       const parsedLat = parseFloat(lat);
       const parsedLon = parseFloat(lon);
-      const [data, city] = await Promise.all([
+      if (
+        isNaN(parsedLat) || isNaN(parsedLon) ||
+        parsedLat < -90 || parsedLat > 90 ||
+        parsedLon < -180 || parsedLon > 180
+      ) {
+        return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
+      }
+      const [weatherResult, geocodeResult] = await Promise.allSettled([
         weatherApi.getWeather(parsedLat, parsedLon),
         reverseGeocode(parsedLat, parsedLon),
       ]);
+      if (weatherResult.status === "rejected") throw weatherResult.reason;
+      const data = weatherResult.value;
+      const city = geocodeResult.status === "fulfilled" ? geocodeResult.value : null;
       enrichCurrentFromHourly(data);
       data.location.city = city ?? undefined;
       return NextResponse.json(data);

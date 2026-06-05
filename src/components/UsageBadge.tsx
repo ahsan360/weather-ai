@@ -7,14 +7,18 @@ import type { UsageStats } from "@/types";
 function isUsageStats(d: unknown): d is UsageStats {
   if (typeof d !== "object" || d === null) return false;
   const o = d as Record<string, unknown>;
+  const period = o.period as Record<string, unknown> | undefined;
+  const limits = o.limits as Record<string, unknown> | undefined;
   return (
     typeof o.plan === "string" &&
-    typeof o.period === "object" && o.period !== null &&
-    typeof o.limits === "object" && o.limits !== null
+    typeof period === "object" && period !== null &&
+    typeof period.requestCount === "number" &&
+    typeof limits === "object" && limits !== null &&
+    typeof limits.requests === "number"
   );
 }
 
-export default function UsageBadge() {
+export default function UsageBadge({ refreshKey }: { refreshKey?: number }) {
   const [usage, setUsage] = useState<UsageStats | null>(null);
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export default function UsageBadge() {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
       .then((d) => { if (isUsageStats(d)) setUsage(d); })
       .catch(() => null);
-  }, []);
+  }, [refreshKey]);
 
   if (!usage) return null;
 

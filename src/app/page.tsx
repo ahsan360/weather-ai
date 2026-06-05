@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [usageKey, setUsageKey] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
   const load = useCallback(async (lat?: number, lon?: number) => {
@@ -56,8 +57,9 @@ export default function DashboardPage() {
 
       const data = await fetchJson<WeatherResponse>(url, controller.signal);
       setWeather(data);
+      setUsageKey((k) => k + 1);
     } catch (err) {
-      if ((err as { name?: string }).name === "AbortError") return;
+      if (err instanceof Error && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Failed to load weather");
     } finally {
       setLoading(false);
@@ -91,7 +93,7 @@ export default function DashboardPage() {
         <div className="flex-1 min-w-64">
           <SearchBar onResult={handleGeoResult} />
         </div>
-        <UsageBadge />
+        <UsageBadge refreshKey={usageKey} />
       </div>
 
       {loading && <LoadingSkeleton />}

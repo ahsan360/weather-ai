@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
     }
 
     const { lat, lon, display_name } = results[0];
+    if (!lat || !lon) {
+      return NextResponse.json({ error: "City not found" }, { status: 404 });
+    }
     return NextResponse.json({ lat, lon, name: display_name });
   } catch (err) {
     return apiError(err, "Geocoding failed");

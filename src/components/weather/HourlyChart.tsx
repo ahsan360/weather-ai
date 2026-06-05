@@ -26,8 +26,8 @@ export default function HourlyChart({ hours }: Props) {
       </p>
       <div className="overflow-x-auto pb-1">
         <div className="flex min-w-max items-end gap-3">
-          {displayed.map((hour, i) => (
-            <div key={i} className="flex w-12 flex-col items-center gap-1">
+          {displayed.map((hour) => (
+            <div key={hour.time} className="flex w-12 flex-col items-center gap-1">
               <span className="text-xs font-medium text-white">
                 {formatTemp(hour.temperature)}
               </span>
