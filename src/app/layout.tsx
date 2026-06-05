@@ -6,9 +6,8 @@ import Navbar from "@/components/Navbar";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
-  title: "WeatherAI — Intelligent Weather & Tree Analysis",
-  description:
-    "Real-time weather with AI-powered summaries and satellite tree analysis.",
+  title: "WeatherAI — Intelligent Weather Forecasts",
+  description: "Real-time weather with AI-powered summaries and forecasts.",
 };
 
 export default function RootLayout({

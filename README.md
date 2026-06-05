@@ -1,6 +1,6 @@
 # WeatherAI
 
-Real-time weather intelligence with AI-powered summaries and satellite tree analysis, built on the [WeatherAI API](https://weather-ai.co/docs).
+Real-time weather intelligence with AI-powered summaries, built on the [WeatherAI API](https://weather-ai.co/docs).
 
 ## Live Demo
 
@@ -8,23 +8,20 @@ Real-time weather intelligence with AI-powered summaries and satellite tree anal
 
 ## Features
 
-- **Auto location detection** — detects your city from IP on load, no prompt needed
-- **AI weather summary** — natural-language forecast powered by Gemini via the WeatherAI API
-- **Hourly chart** — today's temperature bar chart with rain probability
-- **7-day forecast** — daily high/low with condition and rain chance
+- **Auto location detection** — uses browser GPS; falls back to IP detection
+- **Current weather** — temperature, condition, humidity, wind, feels like, UV index with live icons
+- **Hourly forecast** — scrollable 24-hour chart with weather icons and rain probability
+- **7-day forecast** — daily high/low, condition icons, rain chance
 - **City search** — search any city worldwide
 - **API usage badge** — live request quota from `/v1/usage`
-- **AI Tree Analyzer** — upload a drone or satellite image to count trees, assess canopy health, and get agronomic recommendations
 
 ## API Endpoints Used
 
 | Endpoint | Purpose |
 |---|---|
 | `GET /v1/weather-geo` | Auto-detect location by user IP |
-| `GET /v1/weather` | Current conditions + 7-day forecast + AI summary |
-| `GET /v1/hourly` | Hour-by-hour temperature data |
+| `GET /v1/weather` | Current conditions + hourly + 7-day forecast |
 | `GET /v1/usage` | Live API quota display |
-| `POST /v1/trees/analyze` | AI tree counting and canopy health from imagery |
 
 ## Tech Stack
 
@@ -59,7 +56,5 @@ Real-time weather intelligence with AI-powered summaries and satellite tree anal
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000)
-
-
 
 > **Security note:** The API key lives only in Next.js Route Handlers — it is never shipped to the browser.

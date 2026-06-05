@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Cloud, TreePine } from "lucide-react";
+import { Cloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Dashboard", icon: Cloud },
-  { href: "/tree-analyzer", label: "Tree Analyzer", icon: TreePine },
 ];
 
 export default function Navbar() {

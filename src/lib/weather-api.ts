@@ -1,4 +1,4 @@
-import type { WeatherResponse, UsageStats, TreeAnalysisResult, TreeQuota } from "@/types";
+import type { WeatherResponse, UsageStats } from "@/types";
 
 const BASE_URL = "https://api.weather-ai.co";
 
@@ -63,10 +63,4 @@ export const weatherApi = {
 
   getUsage: () =>
     apiFetch<UsageStats>(`/v1/usage`, { next: { revalidate: 0 } } as RequestInit),
-
-  analyzeTrees: (formData: FormData) =>
-    apiFetch<TreeAnalysisResult>(`/v1/trees/analyze`, { method: "POST", body: formData }),
-
-  getTreeQuota: () =>
-    apiFetch<TreeQuota>(`/v1/trees/quota`, { next: { revalidate: 0 } } as RequestInit),
 };

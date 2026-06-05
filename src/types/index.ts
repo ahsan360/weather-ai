@@ -69,40 +69,6 @@ export interface UsageStats {
   period_end: string;
 }
 
-export interface TreeHealth {
-  healthy: number;
-  needs_care: number;
-  needs_replacement: number;
-}
-
-export interface TreeAnalysisResult {
-  analysis_id: string;
-  timestamp: string;
-  total_tree_count: number;
-  tree_density_per_acre: number;
-  confidence_score: number;
-  canopy_coverage_pct: number;
-  tree_health: TreeHealth;
-  tree_species_guess: string;
-  observations: string[];
-  recommendations: string[];
-  original_image_url: string;
-  overlay_image_url: string;
-  farmer_id?: string;
-  county?: string;
-  location?: string;
-  land_acres?: number;
-  low_confidence?: boolean;
-}
-
-export interface TreeQuota {
-  plan: string;
-  used: number;
-  limit: number;
-  remaining: number;
-  unlimited: boolean;
-  resets_at: string;
-}
 
 export interface GeoResult {
   lat: string;
