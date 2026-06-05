@@ -57,7 +57,7 @@ export const weatherApi = {
 
   getWeather: (lat: number, lon: number) =>
     apiFetch<WeatherResponse>(
-      `/v1/weather?lat=${lat}&lon=${lon}&days=7&ai=true&units=metric`,
+      `/v1/weather?lat=${lat}&lon=${lon}&days=7&units=metric`,
       { next: { revalidate: 600 } } as RequestInit
     ),
 
