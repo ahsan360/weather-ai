@@ -1,7 +1,7 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 
 interface Props {
-  summary: string;
+  summary: string | null | undefined;
 }
 
 export default function AISummary({ summary }: Props) {
@@ -13,7 +13,14 @@ export default function AISummary({ summary }: Props) {
           AI Summary
         </span>
       </div>
-      <p className="text-sm leading-relaxed text-slate-300">{summary}</p>
+      {summary ? (
+        <p className="text-sm leading-relaxed text-slate-300">{summary}</p>
+      ) : (
+        <p className="flex items-center gap-2 text-sm text-slate-500">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          AI summary not available for this location
+        </p>
+      )}
     </div>
   );
 }

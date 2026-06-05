@@ -109,7 +109,7 @@ export default function DashboardPage() {
         <div className="animate-fade-in space-y-4">
           <CurrentWeather current={weather.current} location={weather.location} />
 
-          {weather.ai_summary && <AISummary summary={weather.ai_summary} />}
+          <AISummary summary={weather.ai_summary} />
 
           {todayHours.length > 0 && <HourlyChart hours={todayHours} />}
 

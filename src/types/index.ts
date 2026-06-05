@@ -79,7 +79,7 @@ export interface UsageStats {
 
 
 export interface GeoResult {
-  lat: string;
+  lat: string; // Nominatim returns coordinates as strings
   lon: string;
   name: string;
 }
