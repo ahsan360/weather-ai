@@ -8,7 +8,7 @@ export interface RateLimitResult {
   reset: number;
 }
 
-const LIMIT = 5;
+const LIMIT = 10;
 const WINDOW = "60 s";
 
 const FAIL_OPEN: RateLimitResult = { success: true, limit: LIMIT, remaining: LIMIT, reset: 0 };
