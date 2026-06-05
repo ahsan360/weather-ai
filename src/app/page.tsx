@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const [usageKey, setUsageKey] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  const load = useCallback(async (lat?: number, lon?: number) => {
+  const load = useCallback(async (lat?: number, lon?: number, city?: string) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     try {
       const url =
         lat != null && lon != null
-          ? `/api/weather?lat=${lat}&lon=${lon}`
+          ? `/api/weather?lat=${lat}&lon=${lon}${city ? `&city=${encodeURIComponent(city)}` : ""}`
           : "/api/weather";
 
       const data = await fetchJson<WeatherResponse>(url, controller.signal);
@@ -81,7 +81,8 @@ export default function DashboardPage() {
   }, [load]);
 
   function handleGeoResult(geo: GeoResult) {
-    load(parseFloat(geo.lat), parseFloat(geo.lon));
+    const city = geo.name.split(",")[0].trim();
+    load(parseFloat(geo.lat), parseFloat(geo.lon), city);
   }
 
   const today = new Date().toISOString().split("T")[0];

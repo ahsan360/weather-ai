@@ -60,17 +60,22 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
       }
 
+      const knownCity = searchParams.get("city");
+
       const [weatherResult, geocodeResult] = await Promise.allSettled([
         weatherApi.getWeather(parsedLat, parsedLon),
-        reverseGeocode(parsedLat, parsedLon),
+        knownCity ? Promise.resolve(null) : reverseGeocode(parsedLat, parsedLon),
       ]);
 
       if (weatherResult.status === "rejected") throw weatherResult.reason;
       const data = weatherResult.value;
-      const geo = geocodeResult.status === "fulfilled" ? geocodeResult.value : { city: null, country: null };
+      const geo: GeoLocation =
+        !knownCity && geocodeResult.status === "fulfilled" && geocodeResult.value
+          ? geocodeResult.value
+          : { city: null, country: null };
 
       enrichCurrentFromHourly(data);
-      data.location.city = geo.city ?? undefined;
+      data.location.city = knownCity ?? geo.city ?? undefined;
       data.location.country = geo.country ?? data.location.country;
       return NextResponse.json(data);
     }
