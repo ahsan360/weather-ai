@@ -1,0 +1,50 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Activity } from "lucide-react";
+import type { UsageStats } from "@/types";
+
+function isUsageStats(d: unknown): d is UsageStats {
+  if (typeof d !== "object" || d === null) return false;
+  const o = d as Record<string, unknown>;
+  return (
+    typeof o.plan === "string" &&
+    typeof o.requests_used === "number" &&
+    typeof o.requests_limit === "number"
+  );
+}
+
+export default function UsageBadge() {
+  const [usage, setUsage] = useState<UsageStats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/usage")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+      .then((d) => { if (isUsageStats(d)) setUsage(d); })
+      .catch(() => null);
+  }, []);
+
+  if (!usage) return null;
+
+  const pct = Math.min(
+    100,
+    Math.round((usage.requests_used / usage.requests_limit) * 100)
+  );
+
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-400">
+      <Activity className="h-3.5 w-3.5 text-blue-400" />
+      <span className="capitalize">{usage.plan}</span>
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-blue-400 transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span>
+        {usage.requests_used.toLocaleString()} /{" "}
+        {usage.requests_limit.toLocaleString()}
+      </span>
+    </div>
+  );
+}

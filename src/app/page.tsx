@@ -1,65 +1,123 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useCallback, useRef } from "react";
+import SearchBar from "@/components/weather/SearchBar";
+import CurrentWeather from "@/components/weather/CurrentWeather";
+import AISummary from "@/components/weather/AISummary";
+import HourlyChart from "@/components/weather/HourlyChart";
+import DailyForecast from "@/components/weather/DailyForecast";
+import UsageBadge from "@/components/UsageBadge";
+import type { WeatherResponse, HourlyResponse, GeoResult } from "@/types";
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`skeleton ${className ?? ""}`} />;
+}
+
+function LoadingSkeleton() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="space-y-4 animate-fade-in">
+      <Skeleton className="h-52" />
+      <Skeleton className="h-24" />
+      <Skeleton className="h-40" />
+      <Skeleton className="h-64" />
     </div>
+  );
+}
+
+async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export default function DashboardPage() {
+  const [weather, setWeather] = useState<WeatherResponse | null>(null);
+  const [hourly, setHourly] = useState<HourlyResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
+
+  const load = useCallback(async (lat?: number, lon?: number) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const { signal } = controller;
+
+    setLoading(true);
+    setError("");
+    setWeather(null);
+    setHourly(null);
+
+    try {
+      const url =
+        lat != null && lon != null
+          ? `/api/weather?lat=${lat}&lon=${lon}`
+          : "/api/weather";
+
+      const weatherData = await fetchJson<WeatherResponse>(url, signal);
+      const { lat: wlat, lon: wlon } = weatherData.location;
+
+      const hourlyData = await fetchJson<HourlyResponse>(
+        `/api/hourly?lat=${wlat}&lon=${wlon}`,
+        signal
+      ).catch(() => null);
+
+      setWeather(weatherData);
+      setHourly(hourlyData);
+    } catch (err) {
+      if ((err as { name?: string }).name === "AbortError") return;
+      setError(err instanceof Error ? err.message : "Failed to load weather");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    return () => abortRef.current?.abort();
+  }, [load]);
+
+  function handleGeoResult(geo: GeoResult) {
+    load(parseFloat(geo.lat), parseFloat(geo.lon));
+  }
+
+  const todayHours = hourly?.forecast?.days?.[0]?.hour ?? null;
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex-1 min-w-64">
+          <SearchBar onResult={handleGeoResult} />
+        </div>
+        <UsageBadge />
+      </div>
+
+      {loading && <LoadingSkeleton />}
+
+      {error && !loading && (
+        <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-5 py-4 text-sm text-red-400">
+          {error}
+        </div>
+      )}
+
+      {weather && !loading && (
+        <div className="animate-fade-in space-y-4">
+          <CurrentWeather current={weather.current} location={weather.location} />
+
+          {weather.ai_summary && <AISummary summary={weather.ai_summary} />}
+
+          {todayHours && todayHours.length > 0 && (
+            <HourlyChart hours={todayHours} />
+          )}
+
+          {weather.forecast?.days && weather.forecast.days.length > 0 && (
+            <DailyForecast days={weather.forecast.days} />
+          )}
+        </div>
+      )}
+    </main>
   );
 }

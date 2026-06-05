@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WeatherAI
 
-## Getting Started
+Real-time weather intelligence with AI-powered summaries and satellite tree analysis, built on the [WeatherAI API](https://weather-ai.co/docs).
 
-First, run the development server:
+## Live Demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+[https://weather-ai-ahsan.vercel.app](https://weather-ai-ahsan.vercel.app) <!-- replace with your Vercel URL after deployment -->
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Auto location detection** — detects your city from IP on load, no prompt needed
+- **AI weather summary** — natural-language forecast powered by Gemini via the WeatherAI API
+- **Hourly chart** — today's temperature bar chart with rain probability
+- **7-day forecast** — daily high/low with condition and rain chance
+- **City search** — search any city worldwide
+- **API usage badge** — live request quota from `/v1/usage`
+- **AI Tree Analyzer** — upload a drone or satellite image to count trees, assess canopy health, and get agronomic recommendations
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API Endpoints Used
 
-## Learn More
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/weather-geo` | Auto-detect location by user IP |
+| `GET /v1/weather` | Current conditions + 7-day forecast + AI summary |
+| `GET /v1/hourly` | Hour-by-hour temperature data |
+| `GET /v1/usage` | Live API quota display |
+| `POST /v1/trees/analyze` | AI tree counting and canopy health from imagery |
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Lucide React** icons
+- Deployed on **Vercel**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Local Setup
 
-## Deploy on Vercel
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/weather-ai.git
+   cd weather-ai
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Create `.env.local` in the project root:
+   ```
+   WEATHER_API_KEY=wai_your_key_here
+   ```
+   Get your key at [weather-ai.co](https://weather-ai.co) → Dashboard → API Keys.
+
+4. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000)
+
+## Deploy to Vercel
+
+1. Push to a public GitHub repository
+2. Import at [vercel.com/new](https://vercel.com/new)
+3. Add `WEATHER_API_KEY` in Settings → Environment Variables
+4. Click **Deploy**
+
+> **Security note:** The API key lives only in Next.js Route Handlers — it is never shipped to the browser.
