@@ -3,23 +3,30 @@ import { weatherApi } from "@/lib/weather-api";
 import { apiError } from "@/lib/api-error";
 import type { WeatherResponse, HourForecast } from "@/types";
 
-async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+interface GeoLocation {
+  city: string | null;
+  country: string | null;
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<GeoLocation> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,
       { headers: { "User-Agent": "WeatherAI-App/1.0" }, next: { revalidate: 86400 } }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return { city: null, country: null };
     const d = await res.json();
-    return (
-      d.address?.city ??
-      d.address?.town ??
-      d.address?.village ??
-      d.display_name?.split(",")[0] ??
-      null
-    );
+    return {
+      city:
+        d.address?.city ??
+        d.address?.town ??
+        d.address?.village ??
+        d.display_name?.split(",")[0] ??
+        null,
+      country: d.address?.country_code?.toUpperCase() ?? null,
+    };
   } catch {
-    return null;
+    return { city: null, country: null };
   }
 }
 
@@ -52,15 +59,19 @@ export async function GET(req: NextRequest) {
       ) {
         return NextResponse.json({ error: "Invalid coordinates" }, { status: 400 });
       }
+
       const [weatherResult, geocodeResult] = await Promise.allSettled([
         weatherApi.getWeather(parsedLat, parsedLon),
         reverseGeocode(parsedLat, parsedLon),
       ]);
+
       if (weatherResult.status === "rejected") throw weatherResult.reason;
       const data = weatherResult.value;
-      const city = geocodeResult.status === "fulfilled" ? geocodeResult.value : null;
+      const geo = geocodeResult.status === "fulfilled" ? geocodeResult.value : { city: null, country: null };
+
       enrichCurrentFromHourly(data);
-      data.location.city = city ?? undefined;
+      data.location.city = geo.city ?? undefined;
+      data.location.country = geo.country ?? data.location.country;
       return NextResponse.json(data);
     }
 
@@ -69,11 +80,9 @@ export async function GET(req: NextRequest) {
     const { data, geoHeaders } = await weatherApi.getWeatherByIp(ip);
     enrichCurrentFromHourly(data);
 
-    const city =
-      geoHeaders.city ??
-      (await reverseGeocode(data.location.lat, data.location.lon));
-    data.location.city = city ?? undefined;
-    data.location.country = geoHeaders.country ?? data.location.country;
+    const geo = await reverseGeocode(data.location.lat, data.location.lon);
+    data.location.city = geoHeaders.city ?? geo.city ?? undefined;
+    data.location.country = geo.country ?? geoHeaders.country ?? undefined;
 
     return NextResponse.json(data);
   } catch (err) {

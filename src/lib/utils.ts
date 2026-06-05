@@ -22,9 +22,6 @@ export const formatHour = (timeStr: string): string => {
   });
 };
 
-export const formatPct = (value: number, total: number): string =>
-  total === 0 ? "0%" : `${Math.round((value / total) * 100)}%`;
-
 const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
 export const degToCompass = (deg?: number): string => {
   if (deg == null) return "";

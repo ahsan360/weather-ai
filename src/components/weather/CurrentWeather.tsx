@@ -1,4 +1,4 @@
-import { Droplets, Wind, Eye, Thermometer, Sun } from "lucide-react";
+import { Droplets, Wind, Thermometer, Sun } from "lucide-react";
 import { formatTemp, wmoText, degToCompass } from "@/lib/utils";
 import type { CurrentWeather as CurrentWeatherType, WeatherLocation } from "@/types";
 
@@ -26,11 +26,7 @@ function buildStats(c: CurrentWeatherType) {
 
 export default function CurrentWeather({ current, location }: Props) {
   const locationName = location.city ?? "Your Location";
-  const country = location.country && location.country !== "CN"
-    ? `, ${location.country}`
-    : location.timezone
-      ? ` (${location.timezone.split("/")[1]?.replace("_", " ") ?? location.timezone})`
-      : "";
+  const country = location.country ? `, ${location.country}` : "";
   const stats = buildStats(current);
 
   return (
