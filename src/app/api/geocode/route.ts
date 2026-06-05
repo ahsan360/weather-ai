@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiError } from "@/lib/api-error";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+const MAX_CITY_LENGTH = 100;
 
 interface NominatimResult {
   lat: string;
@@ -8,10 +11,22 @@ interface NominatimResult {
 }
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
+  const rate = await checkRateLimit(ip);
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rate.reset - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
     const city = req.nextUrl.searchParams.get("city");
     if (!city?.trim()) {
       return NextResponse.json({ error: "city is required" }, { status: 400 });
+    }
+    if (city.length > MAX_CITY_LENGTH) {
+      return NextResponse.json({ error: "City name too long" }, { status: 400 });
     }
 
     const res = await fetch(
