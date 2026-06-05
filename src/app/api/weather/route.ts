@@ -44,17 +44,21 @@ function enrichCurrentFromHourly(data: WeatherResponse): void {
   }
 }
 
-export async function GET(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
-  const rate = await checkRateLimit(ip);
-  if (!rate.success) {
-    return NextResponse.json(
-      { error: "Too many requests. Please slow down." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil((rate.reset - Date.now()) / 1000)) } }
-    );
-  }
+function getClientIp(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anonymous";
+}
 
+export async function GET(req: NextRequest) {
   try {
+    const clientIp = getClientIp(req);
+    const rate = await checkRateLimit(clientIp);
+    if (!rate.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rate.reset - Date.now()) / 1000)) } }
+      );
+    }
+
     const { searchParams } = req.nextUrl;
     const lat = searchParams.get("lat");
     const lon = searchParams.get("lon");
@@ -90,9 +94,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(data);
     }
 
-    const forwarded = req.headers.get("x-forwarded-for");
-    const ip = forwarded?.split(",")[0].trim() ?? "auto";
-    const { data, geoHeaders } = await weatherApi.getWeatherByIp(ip);
+    const { data, geoHeaders } = await weatherApi.getWeatherByIp(clientIp);
     enrichCurrentFromHourly(data);
 
     const geo = await reverseGeocode(data.location.lat, data.location.lon);

@@ -11,6 +11,8 @@ export interface RateLimitResult {
 const LIMIT = 20;
 const WINDOW = "60 s";
 
+const FAIL_OPEN: RateLimitResult = { success: true, limit: LIMIT, remaining: LIMIT, reset: 0 };
+
 function createLimiter(): Ratelimit | null {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null;
@@ -26,15 +28,17 @@ function createLimiter(): Ratelimit | null {
 const limiter = createLimiter();
 
 export async function checkRateLimit(ip: string): Promise<RateLimitResult> {
-  if (!limiter) {
-    // Fail open: no Redis configured — allow all requests (dev / local)
-    return { success: true, limit: LIMIT, remaining: LIMIT, reset: 0 };
+  if (!limiter) return FAIL_OPEN;
+  try {
+    const result = await limiter.limit(ip);
+    return {
+      success: result.success,
+      limit: result.limit,
+      remaining: result.remaining,
+      reset: result.reset,
+    };
+  } catch {
+    // Redis unavailable — fail open so users are not blocked
+    return FAIL_OPEN;
   }
-  const result = await limiter.limit(ip);
-  return {
-    success: result.success,
-    limit: result.limit,
-    remaining: result.remaining,
-    reset: result.reset,
-  };
 }

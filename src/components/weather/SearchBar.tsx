@@ -46,6 +46,7 @@ export default function SearchBar({ onResult }: Props) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search city..."
+          maxLength={100}
           disabled={loading}
           className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 disabled:opacity-50"
         />
